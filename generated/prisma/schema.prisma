@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Canvas {
+  id     Int    @id @default(autoincrement())
+  Name   String @db.Text
+  Type   String @db.Text
+  Width  Int
+  Height Int
+}
