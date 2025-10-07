@@ -1,16 +1,12 @@
 /* eslint-env browser */
 /* global document, alert, confirm */
-// API Configuration
-const API_BASE_URL =
-  process.env.NODE_ENV === 'production'
-    ? window.location.origin.replace(':3000', ':3001')
-    : 'http://localhost:3001';
-
 // DOM Elements (will be initialized when DOM is ready)
 let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function () {
+  // API Configuration
+  const API_BASE_URL = window.location.origin.replace(':3000', ':3001');
   // Initialize DOM elements
   loadingEl = document.getElementById('loading');
   errorEl = document.getElementById('error');
@@ -19,12 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
   itemsGridEl = document.getElementById('items-grid');
   addFormEl = document.getElementById('add-form');
 
-  fetchCanvasItems();
-  setupFormHandlers();
+  fetchCanvasItems(API_BASE_URL);
+  setupFormHandlers(API_BASE_URL);
 });
 
 // Fetch canvas items from API
-async function fetchCanvasItems() {
+async function fetchCanvasItems(API_BASE_URL) {
   try {
     showLoading();
     hideError();
@@ -36,7 +32,7 @@ async function fetchCanvasItems() {
     }
 
     const data = await response.json();
-    displayCanvasItems(data);
+    displayCanvasItems(data, API_BASE_URL);
   } catch (error) {
     console.error('Error fetching canvas items:', error);
     showError(error.message);
@@ -44,7 +40,7 @@ async function fetchCanvasItems() {
 }
 
 // Display canvas items
-function displayCanvasItems(items) {
+function displayCanvasItems(items, API_BASE_URL) {
   hideLoading();
   hideError();
 
@@ -60,7 +56,7 @@ function displayCanvasItems(items) {
                 <p><strong>Size:</strong> ${item.Width} x ${item.Height}</p>
                 <div class="actions">
                     <button onclick="editItem(${item.id})">Edit</button>
-                    <button class="delete" onclick="deleteItem(${item.id})">Delete</button>
+                    <button class="delete" onclick="deleteItem(${item.id}, '${API_BASE_URL}')">Delete</button>
                 </div>
             </div>
         `
@@ -97,12 +93,12 @@ function hideError() {
 }
 
 // Setup form handlers
-function setupFormHandlers() {
-  addFormEl.addEventListener('submit', handleAddItem);
+function setupFormHandlers(API_BASE_URL) {
+  addFormEl.addEventListener('submit', (e) => handleAddItem(e, API_BASE_URL));
 }
 
 // Handle add item form submission
-async function handleAddItem(event) {
+async function handleAddItem(event, API_BASE_URL) {
   event.preventDefault();
 
   const formData = new FormData(addFormEl);
@@ -128,7 +124,7 @@ async function handleAddItem(event) {
 
     // Clear form and refresh items
     addFormEl.reset();
-    fetchCanvasItems();
+    fetchCanvasItems(API_BASE_URL);
   } catch (error) {
     console.error('Error adding canvas item:', error);
     alert('Failed to add canvas item: ' + error.message);
@@ -141,7 +137,7 @@ function editItem(id) {
 }
 
 // Delete item
-async function deleteItem(id) {
+async function deleteItem(id, API_BASE_URL) {
   if (!confirm('Are you sure you want to delete this item?')) {
     return;
   }
@@ -156,7 +152,7 @@ async function deleteItem(id) {
     }
 
     // Refresh items
-    fetchCanvasItems();
+    fetchCanvasItems(API_BASE_URL);
   } catch (error) {
     console.error('Error deleting canvas item:', error);
     alert('Failed to delete canvas item: ' + error.message);
