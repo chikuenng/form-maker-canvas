@@ -8,13 +8,33 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet());
+
+// CORS configuration - more permissive for Railway deployment
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_URL
+      ? [process.env.FRONTEND_URL]
+      : ['*'] // Allow all in production if FRONTEND_URL not set
+    : ['http://localhost:3000', 'http://frontend:3000'];
+
 app.use(
   cors({
     origin:
-      process.env.NODE_ENV === 'production'
-        ? ['http://localhost:3000']
-        : ['http://localhost:3000', 'http://frontend:3000'],
-    credentials: true,
+      allowedOrigins[0] === '*'
+        ? '*'
+        : (origin, callback) => {
+            // Allow requests with no origin (mobile apps, Postman, curl)
+            if (!origin) return callback(null, true);
+            if (
+              allowedOrigins.indexOf(origin) !== -1 ||
+              allowedOrigins[0] === '*'
+            ) {
+              callback(null, true);
+            } else {
+              callback(new Error('Not allowed by CORS'));
+            }
+          },
+    credentials: allowedOrigins[0] !== '*',
   })
 );
 app.use(express.json());
@@ -113,9 +133,49 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Backend server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🎨 Canvas API: http://localhost:${PORT}/api/canvas`);
+// Test database connection before starting server
+async function startServer() {
+  try {
+    // Test database connection
+    console.log('🔍 Testing database connection...');
+    const connection = await pool.getConnection();
+    console.log('✅ Database connected successfully');
+
+    // Test if Canvas table exists
+    await connection.query('SELECT 1 FROM Canvas LIMIT 1');
+    console.log('✅ Canvas table accessible');
+    connection.release();
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+    console.error('📌 Check your environment variables:');
+    console.error('   - DB_HOST:', process.env.DB_HOST || 'NOT SET');
+    console.error('   - DB_PORT:', process.env.DB_PORT || 'NOT SET');
+    console.error('   - DB_USER:', process.env.DB_USER || 'NOT SET');
+    console.error('   - DB_NAME:', process.env.DB_NAME || 'NOT SET');
+    console.error('⚠️  Server will start but database operations will fail');
+  }
+
+  // Start server
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log('\n🚀 ====================================');
+    console.log(`🚀 Backend server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`🎨 Canvas API: http://localhost:${PORT}/api/canvas`);
+    console.log('🚀 ====================================\n');
+  });
+}
+
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Start the server
+startServer();
