@@ -6,7 +6,7 @@ let dbConfig;
 if (process.env.MYSQL_URL) {
   // Parse Railway's MYSQL_URL format: mysql://user:pass@host:port/database
   const url = new URL(process.env.MYSQL_URL);
-  
+
   dbConfig = {
     host: url.hostname,
     port: url.port || 3306,
@@ -17,21 +17,21 @@ if (process.env.MYSQL_URL) {
     connectionLimit: 10,
     queueLimit: 0,
   };
-  
+
   console.log('📡 Using MYSQL_URL for database connection');
 } else {
   // Fallback to individual environment variables
   dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || 'mysql.railway.internal',
     port: process.env.DB_PORT || 3306,
-    user: process.env.DB_USER || 'admin',
-    password: process.env.DB_PASSWORD || 'Bng20071962!',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'FnOdwTeILKVqdemLIEmEmUKrGGfKWvUP',
     database: process.env.DB_NAME || 'FormMaker',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
   };
-  
+
   console.log('📡 Using individual DB_* environment variables');
 }
 

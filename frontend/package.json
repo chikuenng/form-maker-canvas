@@ -1,0 +1,11 @@
+{
+  "name": "form-maker-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Form Maker Canvas application",
+  "scripts": {
+    "start": "npx serve -s . -p ${PORT:-8080}"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

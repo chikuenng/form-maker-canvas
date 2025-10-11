@@ -6,7 +6,7 @@ let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function () {
   // API Configuration
-  const API_BASE_URL = window.location.origin.replace(':3000', ':3001');
+  const API_BASE_URL = 'https://web-production-9c4a.up.railway.app';
   // Initialize DOM elements
   loadingEl = document.getElementById('loading');
   errorEl = document.getElementById('error');
