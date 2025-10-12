@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global document, alert, confirm */
+/* global document, alert, confirm, localStorage */
 
 // DOM Elements (will be initialized when DOM is ready)
 let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
@@ -9,19 +9,19 @@ const API_BASE_URL = 'https://web-production-9c4a.up.railway.app';
 
 // Get authentication token
 function getToken() {
-  return localStorage.getItem('token');
+  return window.localStorage.getItem('token');
 }
 
 // Get current user
 function getUser() {
-  const userJson = localStorage.getItem('user');
+  const userJson = window.localStorage.getItem('user');
   return userJson ? JSON.parse(userJson) : null;
 }
 
 // Logout
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  window.localStorage.removeItem('token');
+  window.localStorage.removeItem('user');
   window.location.href = 'login.html';
 }
 
@@ -51,7 +51,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // Add user info and logout button to header
   const user = getUser();
   if (user) {
-    const header = document.querySelector('h1') || document.querySelector('header') || document.body;
+    const header =
+      document.querySelector('h1') ||
+      document.querySelector('header') ||
+      document.body;
     const userInfoDiv = document.createElement('div');
     userInfoDiv.id = 'user-info';
     userInfoDiv.style.cssText =
@@ -135,7 +138,12 @@ function displayCanvasItems(items) {
 
   // Attach event listeners to edit and delete buttons
   document.querySelectorAll('.btn-edit').forEach((btn) => {
-    btn.addEventListener('click', () => handleEdit(btn.dataset.id, items.find((item) => item.id == btn.dataset.id)));
+    btn.addEventListener('click', () =>
+      handleEdit(
+        btn.dataset.id,
+        items.find((item) => item.id == btn.dataset.id)
+      )
+    );
   });
 
   document.querySelectorAll('.btn-delete').forEach((btn) => {
@@ -193,13 +201,20 @@ async function handleEdit(id, currentItem) {
   const name = prompt('Enter new name:', currentItem ? currentItem.Name : '');
   if (!name) return;
 
-  const type = prompt('Enter type (form/canvas):', currentItem ? currentItem.Type : '');
+  const type = prompt(
+    'Enter type (form/canvas):',
+    currentItem ? currentItem.Type : ''
+  );
   if (!type) return;
 
-  const width = parseInt(prompt('Enter width:', currentItem ? currentItem.Width : ''));
+  const width = parseInt(
+    prompt('Enter width:', currentItem ? currentItem.Width : '')
+  );
   if (isNaN(width)) return;
 
-  const height = parseInt(prompt('Enter height:', currentItem ? currentItem.Height : ''));
+  const height = parseInt(
+    prompt('Enter height:', currentItem ? currentItem.Height : '')
+  );
   if (isNaN(height)) return;
 
   try {
@@ -294,4 +309,3 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
-
