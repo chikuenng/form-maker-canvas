@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global document, alert, confirm, localStorage */
+/* global window, document, localStorage, prompt, confirm */
 
 // DOM Elements (will be initialized when DOM is ready)
 let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
