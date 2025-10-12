@@ -184,8 +184,8 @@
 
           if (response.ok) {
             // Save token to localStorage
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+            window.localStorage.setItem('token', data.token);
+            window.localStorage.setItem('user', JSON.stringify(data.user));
 
             messageEl.textContent = 'Login successful! Redirecting...';
             messageEl.className = 'success-message';
@@ -225,8 +225,8 @@
 
           if (response.ok) {
             // Save token to localStorage
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+            window.localStorage.setItem('token', data.token);
+            window.localStorage.setItem('user', JSON.stringify(data.user));
 
             messageEl.textContent = 'Account created! Redirecting...';
             messageEl.className = 'success-message';
@@ -251,7 +251,7 @@
       });
 
       // Check if already logged in
-      if (localStorage.getItem('token')) {
+      if (window.localStorage.getItem('token')) {
         window.location.href = 'index.html';
       }
     </script>
