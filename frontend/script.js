@@ -1,8 +1,8 @@
 /* eslint-env browser */
-/* global window, document, localStorage, prompt, confirm */
+/* global window, document, prompt, confirm */
 
 // DOM Elements (will be initialized when DOM is ready)
-let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
+let loadingEl, errorEl, errorMessageEl, itemsGridEl, addFormEl;
 
 // API Configuration
 const API_BASE_URL = 'https://web-production-9c4a.up.railway.app';
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
   loadingEl = document.getElementById('loading');
   errorEl = document.getElementById('error');
   errorMessageEl = document.getElementById('error-message');
-  canvasItemsEl = document.getElementById('canvas-items');
   itemsGridEl = document.getElementById('items-grid');
   addFormEl = document.getElementById('add-form');
 
