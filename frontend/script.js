@@ -2,14 +2,7 @@
 /* global document, alert, confirm */
 
 // DOM Elements (will be initialized when DOM is ready)
-let loadingEl,
-  errorEl,
-  errorMessageEl,
-  canvasItemsEl,
-  itemsGridEl,
-  addFormEl,
-  userInfoEl,
-  logoutBtn;
+let loadingEl, errorEl, errorMessageEl, canvasItemsEl, itemsGridEl, addFormEl;
 
 // API Configuration
 const API_BASE_URL = 'https://web-production-9c4a.up.railway.app';
@@ -55,34 +48,34 @@ document.addEventListener('DOMContentLoaded', function () {
   itemsGridEl = document.getElementById('items-grid');
   addFormEl = document.getElementById('add-form');
 
-  // Add user info and logout button
+  // Add user info and logout button to header
   const user = getUser();
   if (user) {
-    // Create user info element if it doesn't exist
-    let header =
-      document.querySelector('.header') ||
-      document.querySelector('h1').parentElement;
-    if (!document.getElementById('user-info')) {
-      const userInfoDiv = document.createElement('div');
-      userInfoDiv.id = 'user-info';
-      userInfoDiv.style.cssText =
-        'position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 15px;';
-      userInfoDiv.innerHTML = `
-        <span style="font-size: 14px; color: #666;">Welcome, <strong>${user.username}</strong></span>
-        <button id="logout-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
-      `;
-      document.body.insertBefore(userInfoDiv, document.body.firstChild);
+    const header = document.querySelector('h1') || document.querySelector('header') || document.body;
+    const userInfoDiv = document.createElement('div');
+    userInfoDiv.id = 'user-info';
+    userInfoDiv.style.cssText =
+      'position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 15px; background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;';
+    userInfoDiv.innerHTML = `
+      <span style="font-size: 14px; color: #666;">Welcome, <strong>${escapeHtml(user.username)}</strong></span>
+      <button id="logout-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Logout</button>
+    `;
 
-      document.getElementById('logout-btn').addEventListener('click', logout);
+    if (header.tagName === 'H1') {
+      header.parentElement.insertBefore(userInfoDiv, header.nextSibling);
+    } else {
+      document.body.insertBefore(userInfoDiv, document.body.firstChild);
     }
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
   }
 
-  fetchCanvasItems(API_BASE_URL);
-  setupFormHandlers(API_BASE_URL);
+  fetchCanvasItems();
+  setupFormHandlers();
 });
 
 // Fetch canvas items from API
-async function fetchCanvasItems(API_BASE_URL) {
+async function fetchCanvasItems() {
   try {
     showLoading();
     hideError();
@@ -120,7 +113,7 @@ function displayCanvasItems(items) {
 
   if (items.length === 0) {
     itemsGridEl.innerHTML =
-      '<p style="text-align: center; color: #666;">No canvas items yet. Create your first one!</p>';
+      '<p style="text-align: center; color: #666; padding: 40px;">No canvas items yet. Create your first one!</p>';
     return;
   }
 
@@ -142,7 +135,7 @@ function displayCanvasItems(items) {
 
   // Attach event listeners to edit and delete buttons
   document.querySelectorAll('.btn-edit').forEach((btn) => {
-    btn.addEventListener('click', () => handleEdit(btn.dataset.id));
+    btn.addEventListener('click', () => handleEdit(btn.dataset.id, items.find((item) => item.id == btn.dataset.id)));
   });
 
   document.querySelectorAll('.btn-delete').forEach((btn) => {
@@ -151,7 +144,7 @@ function displayCanvasItems(items) {
 }
 
 // Setup form handlers
-function setupFormHandlers(API_BASE_URL) {
+function setupFormHandlers() {
   if (!addFormEl) return;
 
   addFormEl.addEventListener('submit', async (e) => {
@@ -182,7 +175,8 @@ function setupFormHandlers(API_BASE_URL) {
 
       if (response.ok) {
         addFormEl.reset();
-        fetchCanvasItems(API_BASE_URL);
+        fetchCanvasItems();
+        hideError();
       } else {
         const error = await response.json();
         showError(error.error || 'Failed to create canvas item');
@@ -195,17 +189,17 @@ function setupFormHandlers(API_BASE_URL) {
 }
 
 // Handle edit
-async function handleEdit(id) {
-  const name = prompt('Enter new name:');
+async function handleEdit(id, currentItem) {
+  const name = prompt('Enter new name:', currentItem ? currentItem.Name : '');
   if (!name) return;
 
-  const type = prompt('Enter type (form/canvas):');
+  const type = prompt('Enter type (form/canvas):', currentItem ? currentItem.Type : '');
   if (!type) return;
 
-  const width = parseInt(prompt('Enter width:'));
+  const width = parseInt(prompt('Enter width:', currentItem ? currentItem.Width : ''));
   if (isNaN(width)) return;
 
-  const height = parseInt(prompt('Enter height:'));
+  const height = parseInt(prompt('Enter height:', currentItem ? currentItem.Height : ''));
   if (isNaN(height)) return;
 
   try {
@@ -230,7 +224,8 @@ async function handleEdit(id) {
     }
 
     if (response.ok) {
-      fetchCanvasItems(API_BASE_URL);
+      fetchCanvasItems();
+      hideError();
     } else {
       const error = await response.json();
       showError(error.error || 'Failed to update canvas item');
@@ -262,7 +257,8 @@ async function handleDelete(id) {
     }
 
     if (response.ok) {
-      fetchCanvasItems(API_BASE_URL);
+      fetchCanvasItems();
+      hideError();
     } else {
       const error = await response.json();
       showError(error.error || 'Failed to delete canvas item');
@@ -298,3 +294,4 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
