@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <script>
+      // Check authentication before showing page
+      if (!localStorage.getItem('token')) {
+        window.location.href = 'login.html';
+      }
+    </script>
     <div class="container">
       <header class="header">
         <h1>Form Maker - Canvas</h1>
