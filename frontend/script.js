@@ -2,7 +2,7 @@
 /* global window, document, prompt, confirm */
 
 // DOM Elements (will be initialized when DOM is ready)
-let loadingEl, errorEl, errorMessageEl, itemsGridEl, addFormEl;
+let loadingEl, errorEl, errorMessageEl, itemsGridEl, addFormEl, canvasItemsEl;
 
 // API Configuration
 const API_BASE_URL = 'https://web-production-9c4a.up.railway.app';
@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
   errorEl = document.getElementById('error');
   errorMessageEl = document.getElementById('error-message');
   itemsGridEl = document.getElementById('items-grid');
+  canvasItemsEl = document.getElementById('canvas-items');
   addFormEl = document.getElementById('add-form');
 
   // Add user info and logout button to header
@@ -83,27 +84,49 @@ async function fetchCanvasItems() {
     hideError();
 
     const token = getToken();
+    const user = getUser();
+
+    console.log('=== FETCHING CANVAS ITEMS ===');
+    console.log('Current user:', user);
+    console.log('Token:', token ? 'Present' : 'Missing');
+    console.log('API URL:', `${API_BASE_URL}/api/canvas`);
+
     const response = await fetch(`${API_BASE_URL}/api/canvas`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response headers:', [...response.headers.entries()]);
+
     if (response.status === 401 || response.status === 403) {
-      // Token expired or invalid
+      console.error('Authentication failed - redirecting to login');
       logout();
       return;
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
     }
 
     const data = await response.json();
+    console.log('Canvas items received:', data);
+    console.log(
+      'Number of items:',
+      Array.isArray(data) ? data.length : 'Not an array'
+    );
+
     displayCanvasItems(data);
   } catch (error) {
     console.error('Error fetching canvas items:', error);
-    showError('Failed to load canvas items. Please try again.');
+    showError(
+      'Failed to load canvas items. Please try again. Check console for details.'
+    );
   } finally {
     hideLoading();
   }
@@ -111,13 +134,32 @@ async function fetchCanvasItems() {
 
 // Display canvas items
 function displayCanvasItems(items) {
-  if (!itemsGridEl) return;
+  console.log('=== DISPLAYING CANVAS ITEMS ===');
+  console.log('Items to display:', items);
+  console.log('itemsGridEl exists:', !!itemsGridEl);
+  console.log('canvasItemsEl exists:', !!canvasItemsEl);
 
-  if (items.length === 0) {
+  if (!itemsGridEl) {
+    console.error('itemsGridEl not found!');
+    return;
+  }
+
+  // Show the canvas items container
+  if (canvasItemsEl) {
+    canvasItemsEl.style.display = 'block';
+    console.log('Canvas items container shown');
+  } else {
+    console.error('canvasItemsEl not found!');
+  }
+
+  if (!items || items.length === 0) {
+    console.log('No items to display - showing empty message');
     itemsGridEl.innerHTML =
       '<p style="text-align: center; color: #666; padding: 40px;">No canvas items yet. Create your first one!</p>';
     return;
   }
+
+  console.log(`Rendering ${items.length} canvas items`);
 
   itemsGridEl.innerHTML = items
     .map(
