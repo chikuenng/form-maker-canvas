@@ -84,49 +84,27 @@ async function fetchCanvasItems() {
     hideError();
 
     const token = getToken();
-    const user = getUser();
-
-    console.log('=== FETCHING CANVAS ITEMS ===');
-    console.log('Current user:', user);
-    console.log('Token:', token ? 'Present' : 'Missing');
-    console.log('API URL:', `${API_BASE_URL}/api/canvas`);
-
     const response = await fetch(`${API_BASE_URL}/api/canvas`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', [...response.headers.entries()]);
-
     if (response.status === 401 || response.status === 403) {
-      console.error('Authentication failed - redirecting to login');
+      // Token expired or invalid
       logout();
       return;
     }
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', errorText);
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
-      );
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Canvas items received:', data);
-    console.log(
-      'Number of items:',
-      Array.isArray(data) ? data.length : 'Not an array'
-    );
-
     displayCanvasItems(data);
   } catch (error) {
     console.error('Error fetching canvas items:', error);
-    showError(
-      'Failed to load canvas items. Please try again. Check console for details.'
-    );
+    showError('Failed to load canvas items. Please try again.');
   } finally {
     hideLoading();
   }
@@ -134,32 +112,18 @@ async function fetchCanvasItems() {
 
 // Display canvas items
 function displayCanvasItems(items) {
-  console.log('=== DISPLAYING CANVAS ITEMS ===');
-  console.log('Items to display:', items);
-  console.log('itemsGridEl exists:', !!itemsGridEl);
-  console.log('canvasItemsEl exists:', !!canvasItemsEl);
-
-  if (!itemsGridEl) {
-    console.error('itemsGridEl not found!');
-    return;
-  }
+  if (!itemsGridEl) return;
 
   // Show the canvas items container
   if (canvasItemsEl) {
     canvasItemsEl.style.display = 'block';
-    console.log('Canvas items container shown');
-  } else {
-    console.error('canvasItemsEl not found!');
   }
 
   if (!items || items.length === 0) {
-    console.log('No items to display - showing empty message');
     itemsGridEl.innerHTML =
       '<p style="text-align: center; color: #666; padding: 40px;">No canvas items yet. Create your first one!</p>';
     return;
   }
-
-  console.log(`Rendering ${items.length} canvas items`);
 
   itemsGridEl.innerHTML = items
     .map(
